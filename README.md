@@ -9,6 +9,9 @@ Backend nahi hai: sirf HTML, CSS aur JavaScript. GitHub Pages pe free host hoti 
 - 🎤 **Speak**: mic se bolo aur check karo, Shadowing, Role-play
 - 🔁 **Translate**: English/Hinglish ↔ Japanese (Hinglish dictionary + 22,000 words wali badi dictionary)
 - ✍️ **Scribble**: ungli ya mouse se likhna seekho
+- 🧠 **Tricks**: study techniques (spaced repetition, active recall, shadowing), roz ka plan, roadmap,
+  aur Japanese shortcuts (word endings, katakana rules, verb endings decoder, kanji radicals). Har trick apne level mein bhi hai.
+- 🔁 **Revision**: flashcards/quiz ke cards spaced repetition se sahi din pe wapas aate hain (browser mein save)
 
 ## Local chalana
 `index.html` ko Chrome, Edge ya Brave mein double-click karke kholo.
@@ -22,10 +25,12 @@ Backend nahi hai: sirf HTML, CSS aur JavaScript. GitHub Pages pe free host hoti 
 
 ## Folder structure
 ```
-index.html, learn.html, listen.html, speak.html, translate.html, scribble.html
+index.html, learn.html, listen.html, speak.html, translate.html, scribble.html, tricks.html
 css/style.css
 js/common.js        navbar, awaaz, mic, progress
-js/content.js       saare data ko common format mein badalta hai
+js/content.js       saare data ko common format mein badalta hai + spaced repetition
+js/tricks-ui.js     tricks ke sections (Learn aur Tricks page dono use karte hain)
+js/data/tricks.js   tricks ka data (sources ke saath)
 js/*.js             har page ka code
 js/data/*.js        learning content (words, phrases, grammar, kanji...)
 js/data/jmdict/     badi dictionary (JMdict) + uska license

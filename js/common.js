@@ -7,17 +7,21 @@ const NAV_ITEMS = [
   { href: "listen.html",    label: "👂 Listen" },
   { href: "speak.html",     label: "🎤 Speak" },
   { href: "translate.html", label: "🔁 Translate" },
-  { href: "scribble.html",  label: "✍️ Scribble" }
+  { href: "scribble.html",  label: "✍️ Scribble" },
+  { href: "tricks.html",    label: "🧠 Tricks" }
 ];
 
 // ---------- Settings (romaji dikhana, awaaz ki speed) ----------
 const SETTINGS_KEY = "nihongo-settings-v1";
 
+// voice: Japanese voice ka naam ("" = automatic), pitch: 0.6 bhaari (bass) ... 1.3 patli
+const DEFAULT_SETTINGS = { romaji: true, rate: 0.8, voice: "", pitch: 1 };
+
 function getSettings() {
   try {
-    return Object.assign({ romaji: true, rate: 0.8 }, JSON.parse(localStorage.getItem(SETTINGS_KEY)));
+    return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(SETTINGS_KEY)));
   } catch {
-    return { romaji: true, rate: 0.8 };
+    return { ...DEFAULT_SETTINGS };
   }
 }
 
@@ -48,40 +52,121 @@ function renderNav() {
         ${links}
         <div class="nav-settings">
           <label title="English letters mein Japanese dikhao"><input type="checkbox" id="set-romaji" ${s.romaji ? "checked" : ""}> Romaji</label>
-          <select id="set-rate" title="Awaaz ki speed">
-            <option value="0.6">🐢 Dheere</option>
-            <option value="0.8">🚶 Medium</option>
-            <option value="1">🏃 Normal</option>
-          </select>
+          <button class="nav-voice-btn" id="voice-btn" title="Awaaz ki settings">⚙️ Awaaz</button>
         </div>
       </nav>
+    </div>
+    <div class="voice-panel hidden" id="voice-panel" role="dialog" aria-label="Awaaz ki settings">
+      <div class="vp-head"><b>🔊 Awaaz ki settings</b><button class="sheet-close vp-close" aria-label="Band karo">✕</button></div>
+      <label>🗣️ Voice (aadmi / aurat)<select id="set-voice"></select></label>
+      <p class="muted small" id="voice-note"></p>
+      <label>🎚️ Awaaz ka tone
+        <select id="set-pitch">
+          <option value="0.6">🔈 Bahut bhaari (deep bass)</option>
+          <option value="0.8">🔉 Bhaari (bass)</option>
+          <option value="1">🔊 Normal</option>
+          <option value="1.3">🎵 Patli (high)</option>
+        </select>
+      </label>
+      <label>⏩ Speed
+        <select id="set-rate">
+          <option value="0.5">🐌 Bahut dheere</option>
+          <option value="0.65">🐢 Dheere</option>
+          <option value="0.8">🚶 Medium</option>
+          <option value="1">🏃 Normal (asli speed)</option>
+        </select>
+      </label>
+      <div class="btn-row"><button class="btn primary small" id="voice-test-btn">▶️ Test: こんにちは、げんきですか？</button></div>
     </div>`;
-  header.querySelector("#set-rate").value = String(s.rate);
+  // Purani saved value (jaise 0.6) list mein na ho to sabse paas wala option chuno
+  const nearest = (val, opts) => opts.reduce((a, b) => Math.abs(b - val) < Math.abs(a - val) ? b : a);
+  header.querySelector("#set-rate").value = String(nearest(s.rate, [0.5, 0.65, 0.8, 1]));
+  header.querySelector("#set-pitch").value = String(nearest(s.pitch, [0.6, 0.8, 1, 1.3]));
   header.querySelector(".nav-toggle").addEventListener("click", () => {
     header.querySelector(".nav-links").classList.toggle("open");
   });
   header.querySelector("#set-romaji").addEventListener("change", e => {
     saveSettings({ ...getSettings(), romaji: e.target.checked });
   });
+  const panel = header.querySelector("#voice-panel");
+  header.querySelector("#voice-btn").addEventListener("click", () => { fillVoiceSelect(); panel.classList.toggle("hidden"); });
+  header.querySelector(".vp-close").addEventListener("click", () => panel.classList.add("hidden"));
   header.querySelector("#set-rate").addEventListener("change", e => {
     saveSettings({ ...getSettings(), rate: parseFloat(e.target.value) });
   });
+  header.querySelector("#set-pitch").addEventListener("change", e => {
+    saveSettings({ ...getSettings(), pitch: parseFloat(e.target.value) });
+    speakJP("こんにちは");
+  });
+  header.querySelector("#set-voice").addEventListener("change", e => {
+    saveSettings({ ...getSettings(), voice: e.target.value });
+    jpVoice = null;
+    loadJapaneseVoice();
+    speakJP("こんにちは");
+  });
+  header.querySelector("#voice-test-btn").addEventListener("click", () => speakJP("こんにちは、げんきですか？"));
+}
+
+// Voice ke naam se andaaza: aadmi ya aurat (browser ye info nahi deta, isliye naam ki list)
+const MALE_VOICES = /otoya|hattori|ichiro|keita|naoki|daichi|takumi|kenji|male|男性/i;
+const FEMALE_VOICES = /kyoko|o-ren|haruka|ayumi|nanami|mayu|sayaka|shiori|aoi|mizuki|google|female|女性/i;
+
+function voiceGender(v) {
+  if (MALE_VOICES.test(v.name)) return "male";
+  if (FEMALE_VOICES.test(v.name)) return "female";
+  return "";
+}
+
+function japaneseVoices() {
+  return window.speechSynthesis
+    ? speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().replace("_", "-").startsWith("ja"))
+    : [];
+}
+
+function fillVoiceSelect() {
+  const sel = document.getElementById("set-voice");
+  if (!sel) return;
+  const voices = japaneseVoices();
+  const label = v => `${{ male: "👨", female: "👩" }[voiceGender(v)] || "🙂"} ${v.name}${v.localService ? "" : " (online)"}`;
+  sel.innerHTML = `<option value="">Automatic</option>` + voices.map(v => `<option value="${esc(v.name)}">${esc(label(v))}</option>`).join("");
+  sel.value = voices.some(v => v.name === getSettings().voice) ? getSettings().voice : "";
+  const hasMale = voices.some(v => voiceGender(v) === "male");
+  const ua = navigator.userAgent;
+  const howTo = /Mac/i.test(ua) && !/iPhone|iPad/i.test(ua)
+    ? "Mac: System Settings → Accessibility → Spoken Content → System Voice → Manage Voices → Japanese → <b>Otoya</b> (aadmi) download karo, phir browser restart karo."
+    : /Windows/i.test(ua) ? "Windows: Settings → Time & Language → Speech → Add voices → Japanese (Ichiro / Keita aadmi wali awaaz)."
+    : /Android/i.test(ua) ? "Android: Settings → Text-to-speech → Google engine ⚙️ → Japanese → alag voices (I, II, III, IV) mein se chuno."
+    : /iPhone|iPad/i.test(ua) ? "iPhone: Settings → Accessibility → Spoken Content → Voices → Japanese → Otoya download karo."
+    : "Apne device ki Text-to-speech settings mein Japanese voice install karo.";
+  document.getElementById("voice-note").innerHTML = !voices.length
+    ? "😕 Koi Japanese voice nahi mili. " + howTo
+    : `${voices.length} Japanese voice mili. ` + (hasMale ? "" : "👨 Aadmi wali voice nahi hai. Tab tak 'Bhaari (bass)' tone use karo, ya install karo: " + howTo);
 }
 
 // ---------- Japanese voice (browser ka built-in Text-to-Speech) ----------
 let jpVoice = null;
 
 function loadJapaneseVoice() {
-  const voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
-  jpVoice = voices.find(v => v.lang === "ja-JP") ||
-            voices.find(v => v.lang && v.lang.toLowerCase().startsWith("ja")) || null;
+  const voices = japaneseVoices();
+  const wanted = getSettings().voice;
+  jpVoice = (wanted && voices.find(v => v.name === wanted)) ||
+            voices.find(v => v.lang === "ja-JP" && v.localService) || voices[0] || null;
   return jpVoice;
+}
+
+// Conversation mein doosre insaan ke liye alag voice (ho sake to opposite gender wali)
+function altVoice() {
+  const main = jpVoice || loadJapaneseVoice();
+  const others = japaneseVoices().filter(v => !main || v.name !== main.name);
+  if (!others.length) return null;
+  const g = main ? voiceGender(main) : "";
+  return others.find(v => g && voiceGender(v) && voiceGender(v) !== g) || others[0];
 }
 
 if (window.speechSynthesis) {
   loadJapaneseVoice();
   // Voices kabhi kabhi der se load hote hain, isliye event pe dobara check
-  speechSynthesis.onvoiceschanged = loadJapaneseVoice;
+  speechSynthesis.onvoiceschanged = () => { loadJapaneseVoice(); fillVoiceSelect(); };
 }
 
 function hasJapaneseVoice() {
@@ -98,9 +183,14 @@ function speakAsync(text, opts = {}) {
     if (!opts.queue) speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "ja-JP";
-    u.rate = opts.rate || getSettings().rate;
-    u.pitch = opts.pitch || 1;
-    if (jpVoice || loadJapaneseVoice()) u.voice = jpVoice;
+    const s = getSettings();
+    u.rate = opts.rate || s.rate;
+    // opts.alt = conversation ka doosra insaan: alag voice mile to wo, warna patli tone
+    const alt = opts.alt ? altVoice() : null;
+    const pitch = s.pitch * (opts.alt && !alt ? 1.3 : 1);
+    u.pitch = Math.max(0.1, Math.min(2, pitch));
+    if (alt) u.voice = alt;
+    else if (jpVoice || loadJapaneseVoice()) u.voice = jpVoice;
     // Chrome bug: kabhi kabhi "onend" event nahi aata. Isliye timeout bhi lagaya,
     // taaki Shadowing/Role-play beech mein atke nahi.
     let done = false;
@@ -135,8 +225,9 @@ function slowText(text) {
   return parts.length > 1 && parts.length <= 10 ? parts.join("、") : t;
 }
 
+// 🐢 hamesha aapki chuni hui speed se bhi dheere (max 0.5)
 function speakSlow(text) {
-  return speakAsync(slowText(text), { rate: 0.5 });
+  return speakAsync(slowText(text), { rate: Math.min(0.5, getSettings().rate * 0.75) });
 }
 
 function stopSpeaking() {

@@ -28,7 +28,15 @@
         <li><b>🎤 Speak:</b> Mic mein bolo, website batayegi sahi bola ya nahi.</li>
         <li><b>🔁 Translate:</b> Koi word yaad nahi aa raha? English ya Japanese mein search karo.</li>
         <li><b>✍️ Scribble:</b> Likhna seekho (thoda aage jaake).</li>
+        <li><b>🔁 Revision:</b> Flashcards aur quiz ke cards sahi din pe dohraane ke liye wapas aate hain (Learn page pe).</li>
+        <li><b>🧠 Tricks:</b> Jaldi seekhne ke tareeke, word endings, katakana rules, kanji radicals.</li>
       </ol>
+    </section>
+
+    <section>
+      <h2>⏱️ Roz ka 15 minute plan</h2>
+      <div id="routine"></div>
+      <p><a class="btn" href="tricks.html">🧠 Jaldi seekhne ki saari tricks →</a></p>
     </section>
 
     <section>
@@ -40,8 +48,11 @@
   <footer class="footer">Roz 15 minute practice karo. Dheere dheere anime ke simple dialogues samajh aane lagenge 💪</footer>
 
   <script src="js/data/syllabus.js"></script>
+  <script src="js/data/tricks.js"></script>
   <script src="js/common.js"></script>
+  <script src="js/tricks-ui.js"></script>
   <script>
+    document.getElementById("routine").innerHTML = dailyRoutineHtml();
     // Syllabus cards banao
     const grid = document.getElementById("syllabus");
     grid.innerHTML = SYLLABUS.map(s => `

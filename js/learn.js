@@ -9,8 +9,12 @@ function renderPicker() {
     <div class="level-head">
       <h1>📖 Learn</h1>
       <p class="muted">Level 0 se shuru karo aur order mein aage badho. Har level ke end mein Listen aur Speak practice zaroor karo.</p>
-      <a class="btn primary" href="learn.html?level=${next.level}">▶️ Aage badho: Level ${next.level}</a>
+      <div class="btn-row">
+        <a class="btn primary" href="learn.html?level=${next.level}">▶️ Aage badho: Level ${next.level}</a>
+        <a class="btn" href="tricks.html">🧠 Jaldi seekhne ki tricks</a>
+      </div>
     </div>
+    ${revisionPanel()}
     <div class="grid">
       ${SYLLABUS.map(s => `
         <a class="card ${isDone("level-" + s.level) ? "done" : ""}" href="learn.html?level=${s.level}">
@@ -22,6 +26,39 @@ function renderPicker() {
           <p>${esc(s.desc)}</p>
         </a>`).join("")}
     </div>`;
+}
+
+// ---------- 🔁 Spaced repetition revision ----------
+function revisionPanel() {
+  const s = srsStats();
+  if (!s.seen) {
+    return `<div class="tip-box">🔁 <b>Revision (spaced repetition):</b> kisi bhi level mein 🃏 Flashcards karo.
+      Jo cards aapne dekhe, wo sahi din pe yahan dohraane ke liye wapas aayenge (yaad tha → der se, bhool gaye → kal).</div>`;
+  }
+  return `<div class="panel revision">
+    <h2>🔁 Aaj ka revision</h2>
+    <p>${s.due ? `<b>${s.due}</b> cards aaj dohraane hain.` : "🎉 Aaj ke liye koi card baaki nahi!"}
+      <span class="muted">· Dekhe hue cards: ${s.seen} · Pakke yaad (box 3+): ${s.strong}</span></p>
+    ${s.due ? `<a class="btn primary" href="learn.html?revise=1">▶️ Revision shuru karo</a>` : ""}
+  </div>`;
+}
+
+function renderRevision() {
+  const due = getDueItems();
+  root.innerHTML = `
+    <div class="level-head">
+      <a href="learn.html" class="back">← Saare levels</a>
+      <h1>🔁 Aaj ka revision</h1>
+      <p class="muted">Spaced repetition: har card bhoolne se theek pehle wapas aata hai. Yaad tha → agli baar ${SRS_DAYS.slice(1, 4).join(", ")}... din baad. Bhool gaye → kal phir.</p>
+    </div>
+    <div id="rev-body"></div>`;
+  const body = document.getElementById("rev-body");
+  if (!due.length) {
+    body.innerHTML = `<div class="feedback ok">🎉 Aaj ka revision khatam! Kal phir aana.</div>
+      <div class="btn-row center"><a class="btn primary" href="learn.html">📖 Naya lesson karo</a></div>`;
+    return;
+  }
+  flashcards(body, due.slice(0, 30));
 }
 
 // ---------- Level page ----------
@@ -37,7 +74,12 @@ function renderLevel(level) {
     ${levelFooter(level)}`;
   RENDERERS[level](document.getElementById("level-body"));
   bindFooter(level);
-  window.scrollTo(0, 0);
+  // tricks.html se #anchor wala link aaya ho to wo box kholo aur wahan scroll karo
+  const target = location.hash && document.getElementById(location.hash.slice(1));
+  if (target) {
+    if (target.tagName === "DETAILS") target.open = true;
+    target.scrollIntoView({ block: "start" });
+  } else window.scrollTo(0, 0);
 }
 
 function levelFooter(level) {
@@ -77,12 +119,13 @@ function withModes(container, items, renderList) {
     </div>
     <div class="mode-body"></div>`;
   const body = container.querySelector(".mode-body");
+  const modeBar = container.querySelector(".mode-bar");
   const show = mode => {
-    container.querySelectorAll(".mode-bar .chip").forEach(c => c.classList.toggle("active", c.dataset.mode === mode));
+    modeBar.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.mode === mode));
     if (mode === "list") renderList(body);
     else flashcards(body, typeof items === "function" ? items() : items);
   };
-  container.querySelector(".mode-bar").addEventListener("click", e => {
+  modeBar.addEventListener("click", e => {
     const btn = e.target.closest("[data-mode]");
     if (btn) show(btn.dataset.mode);
   });
@@ -120,8 +163,9 @@ function flashcards(container, items) {
     container.querySelector("#fc").addEventListener("click", e => {
       if (!e.target.closest("[data-say]")) reveal();
     });
-    container.querySelector("#fc-yes").addEventListener("click", () => { known++; idx++; show(); });
-    container.querySelector("#fc-no").addEventListener("click", () => { forgot.push(it); idx++; show(); });
+    // Spaced repetition: jawaab yaad rakho, taaki sahi din pe card wapas aaye
+    container.querySelector("#fc-yes").addEventListener("click", () => { srsUpdate(it, true); known++; idx++; show(); });
+    container.querySelector("#fc-no").addEventListener("click", () => { srsUpdate(it, false); forgot.push(it); idx++; show(); });
   }
 
   function summary() {
@@ -142,28 +186,7 @@ function flashcards(container, items) {
   show();
 }
 
-// Tabs helper: [{id, title}] → click pe onSelect(id)
-function tabs(container, list, onSelect) {
-  container.innerHTML = `<div class="tabs">${list.map((t, i) =>
-    `<button class="chip ${i === 0 ? "active" : ""}" data-tab="${esc(t.id)}">${esc(t.title)}</button>`).join("")}</div>
-    <div class="tab-body"></div>`;
-  const body = container.querySelector(".tab-body");
-  container.querySelector(".tabs").addEventListener("click", e => {
-    const b = e.target.closest("[data-tab]");
-    if (!b) return;
-    container.querySelectorAll(".tabs .chip").forEach(c => c.classList.toggle("active", c === b));
-    onSelect(b.dataset.tab, body);
-  });
-  onSelect(list[0].id, body);
-}
-
-function cardsGrid(items) {
-  return `<div class="grid cards">${items.map(it => itemCard(it)).join("")}</div>`;
-}
-
-function tipBox(html) {
-  return `<div class="tip-box">${html}</div>`;
-}
+// tabs(), cardsGrid(), tipBox(): js/tricks-ui.js mein hain
 
 // ======================= Level renderers =======================
 
@@ -192,9 +215,25 @@ function renderIntro(c) {
     </section>
 
     <section class="lesson">
-      <h2>3. Har awaaz = consonant + vowel</h2>
-      <p>k + a = <b>ka</b> (か), k + i = <b>ki</b> (き)... Bilkul Hindi ki barakhadi jaisa: क, कि, कु, के, को!</p>
-      <div class="btn-row">${say("かきくけこ", "か き く け こ (ka ki ku ke ko)")} ${say("さしすせそ", "さ し す せ そ (sa shi su se so)")}</div>
+      <h2>3. Awaaz judti hai, lekin letter ki shape nahi judti!</h2>
+      <p><b>Awaaz</b> ka pattern Hindi barakhadi jaisa hai: k + a = <b>ka</b>, k + i = <b>ki</b>, k + u = <b>ku</b>...</p>
+      <p>Lekin <b>likhawat</b> mein bada farak hai. Hindi mein क ke saath maatra judti hai, isliye क har jagah dikhta rehta hai.
+        Japanese mein <b>har awaaz ka apna alag, poora letter hota hai</b>. か (ka) mein na "k" chhupa hai na あ (a). Ye bas ek naya chitra hai.</p>
+      <div class="table-wrap"><table class="compare">
+        <tr><th></th><th>+a</th><th>+i</th><th>+u</th><th>+e</th><th>+o</th></tr>
+        <tr><td class="lbl">🇮🇳 Hindi: क + maatra<br><small class="muted">(क dikhta rehta hai ✅)</small></td><td>का</td><td>कि</td><td>कु</td><td>के</td><td>को</td></tr>
+        <tr><td class="lbl">🇯🇵 Japanese: k + vowel<br><small class="muted">(har letter alag shape ❗)</small></td><td>か</td><td>き</td><td>く</td><td>け</td><td>こ</td></tr>
+        <tr><td class="lbl">Vowels akele</td><td>あ</td><td>い</td><td>う</td><td>え</td><td>お</td></tr>
+      </table></div>
+      ${tipBox("💡 <b>Matlab:</b> Japanese ki ABC mein 46 'letters' hain, aur har letter = ek poori awaaz (ka, ki, ku...). Inhe tukdon mein todke nahi, ek-ek picture ki tarah yaad karte hain. Isliye Level 1 mein har letter ke saath 🧠 picture-trick di hai (き = chaabi 🔑).")}
+      <p><b>Sirf 3 jagah</b> shape sach mein judti hai (inhe Level 1 mein detail mein seekhoge):</p>
+      <ul>
+        <li><b>゛ (do dots)</b> = awaaz bhaari: か ka → が <b>ga</b> ${say("か、が", "か → が")}</li>
+        <li><b>゜ (chhota gola)</b> = 'p' awaaz: は ha → ぱ <b>pa</b> ${say("は、ぱ", "は → ぱ")}</li>
+        <li><b>Chhota ゃ ゅ ょ</b> = do letter milke ek awaaz: き ki + ゃ ya = きゃ <b>kya</b> ${say("き、や、きゃ", "き + ゃ → きゃ")}</li>
+      </ul>
+      <h3>🧪 Khud try karo: consonant + vowel chuno</h3>
+      <div id="sound-builder"></div>
     </section>
 
     <section class="lesson">
@@ -224,11 +263,68 @@ function renderIntro(c) {
     </section>
 
     <section class="lesson">
+      <h2>7. 🗣️ Pronunciation ki tricks</h2>
+      <p>Ye chhoti baatein aapke Japanese ko natural banayengi. Har box kholo aur examples suno.</p>
+      ${pronunciationHtml()}
+    </section>
+
+    <section class="lesson">
       <h2>🎧 Mini test: kaan kitne tez hain?</h2>
       <p>Awaaz suno aur batao kaunsa word tha.</p>
       <div id="ear-test"></div>
+    </section>
+
+    <section class="lesson">
+      <h2>🧠 Jaldi kaise seekhein? (sabse zaroori!)</h2>
+      <p>Research se saabit tareeke. Inhe roz use karo, aur poori list (sources ke saath) <a href="tricks.html">🧠 Tricks page</a> pe hai.</p>
+      ${trickBox("intro-routine", "Roz ka 15 minute plan", dailyRoutineHtml(), true)}
+      ${trickBox("intro-methods", "Seekhne ke tareeke (techniques)", studyMethodsHtml(true))}
     </section>`;
   earTest(c.querySelector("#ear-test"));
+  soundBuilder(c.querySelector("#sound-builder"));
+}
+
+// Consonant + vowel chuno → kaunsa letter banta hai (Hiragana chart ki rows/columns)
+function soundBuilder(box) {
+  const CONS = [["", "(kuch nahi)"], ["k"], ["s"], ["t"], ["n"], ["h"], ["m"], ["y"], ["r"], ["w"]];
+  const VOWELS = ["a", "i", "u", "e", "o"];
+  let row = 1, col = 0;
+  box.innerHTML = `
+    <div class="builder-row"><b>Consonant:</b> ${CONS.map((c, i) => `<button class="chip" data-row="${i}">${esc(c[1] || c[0])}</button>`).join("")}</div>
+    <div class="builder-row"><b>Vowel:</b> ${VOWELS.map((v, i) => `<button class="chip" data-col="${i}">${v}</button>`).join("")}</div>
+    <div class="builder-out" id="builder-out"></div>`;
+  function show(speak) {
+    box.querySelectorAll("[data-row]").forEach(b => b.classList.toggle("active", Number(b.dataset.row) === row));
+    box.querySelectorAll("[data-col]").forEach(b => b.classList.toggle("active", Number(b.dataset.col) === col));
+    const cell = HIRAGANA.basic[row][col];
+    const out = box.querySelector("#builder-out");
+    const sound = (CONS[row][0] || "") + VOWELS[col];
+    if (!cell) {
+      out.innerHTML = `<div class="builder-eq">${esc(CONS[row][0])} + ${VOWELS[col]} = ❌</div>
+        <p class="muted">Ye awaaz aaj ke Japanese chart mein nahi hai. Isliye chart mein yahan khaali jagah hai.</p>`;
+      return;
+    }
+    const k = toKana(cell);
+    const irregular = k.romaji !== sound ? `<p class="muted">⚠️ Dhyaan do: "${esc(sound)}" nahi, <b>"${esc(k.romaji)}"</b> bolte hain. Ye ${["shi","chi","tsu","fu"].includes(k.romaji) ? "4 khaas awaazon (shi, chi, tsu, fu)" : "khaas letter"} mein se hai.</p>` : "";
+    out.innerHTML = `
+      <div class="builder-eq">${CONS[row][0] ? `<b>${esc(CONS[row][0])}</b> + ` : ""}<b>${VOWELS[col]}</b> = <b>${esc(k.romaji)}</b></div>
+      <div class="big-kana">${esc(k.kana)}</div>
+      <div>
+        <p>Naya letter, apni alag shape. 🧠 ${esc(kanaMnemonic(k.kana))}</p>
+        ${irregular}
+        <p>Example: <b>${esc(k.word)}</b> (${esc(k.wordRomaji)}) = ${esc(k.hi)}</p>
+        <div class="btn-row">${sayBtns(k.kana)}<button class="btn small" data-say="${esc(k.word)}">🔊 Word</button></div>
+      </div>`;
+    if (speak) speakJP(k.kana);
+  }
+  box.addEventListener("click", e => {
+    const r = e.target.closest("[data-row]"), c = e.target.closest("[data-col]");
+    if (r) row = Number(r.dataset.row);
+    else if (c) col = Number(c.dataset.col);
+    else return;
+    show(true);
+  });
+  show(false);
 }
 
 function earTest(box) {
@@ -276,8 +372,9 @@ function kanaChart(container, script, prefix) {
   if (script.combo) sections.push({ id: "combo", title: "Combos (きゃ, しゅ...)" });
 
   container.innerHTML = `
-    <div class="kana-detail empty" id="kana-detail"><p class="muted">👆 Neeche kisi bhi letter pe click karo: awaaz sunoge aur example word dikhega. ▶ dabao to poori line sunoge.</p></div>
-    <div class="kana-tabs"></div>`;
+    <div class="kana-detail empty" id="kana-detail"><p class="muted">👆 Neeche kisi bhi letter pe click karo: awaaz, 🧠 yaad rakhne ki picture-trick aur example word dikhega. ▶ dabao to poori line sunoge.</p></div>
+    <div class="kana-tabs"></div>
+    ${lookalikesHtml(prefix)}`;
   const detail = container.querySelector("#kana-detail");
 
   const cell = k => `<button class="kana-cell" data-kana="${esc(k.kana)}"><span class="k">${esc(k.kana)}</span><span class="r romaji">${esc(k.romaji)}</span></button>`;
@@ -290,7 +387,7 @@ function kanaChart(container, script, prefix) {
     } else {
       const tip = id === "dakuten"
         ? tipBox("💡 Do dots (゛) lagane se awaaz bhaari ho jaati hai: か ka → が <b>ga</b>, さ sa → ざ <b>za</b>, た ta → だ <b>da</b>, は ha → ば <b>ba</b>. Chhota gola (゜) sirf は row pe: は ha → ぱ <b>pa</b>.")
-        : tipBox("💡 Ek din mein 1-2 line seekho. Pehle ▶ dabake line suno, phir har letter pe click karke zor se bolo. Chart Hindi barakhadi jaisa hai: a, i, u, e, o.");
+        : tipBox("💡 Ek din mein 1-2 line seekho. Pehle ▶ dabake line suno, phir har letter pe click karke uski 🧠 picture-trick padho aur zor se bolo. Chart Hindi barakhadi jaisa hai: a, i, u, e, o. Line yaad ho jaaye to 🃏 Flashcards ya Listen quiz se test karo.");
       body.innerHTML = tip + `<div class="table-wrap"><table class="kana-chart">${script[id].map(row => `
         <tr>
           <td><button class="row-play say" data-say="${esc(row.filter(Boolean).map(a => a[0]).join("、"))}" title="Poori line suno">▶</button></td>
@@ -309,11 +406,13 @@ function kanaChart(container, script, prefix) {
 
 function showKanaDetail(detail, k, scribbleSet) {
   const tip = kanaTip(k);
+  const memo = kanaMnemonic(k.kana);
   detail.innerHTML = `
     <div class="kana-detail-inner">
       <div class="big-kana">${esc(k.kana)}</div>
       <div>
         <div class="romaji-big">${esc(k.romaji)}</div>
+        ${memo ? `<p class="memo">🧠 ${esc(memo)}</p>` : ""}
         ${tip ? `<p>💡 ${esc(tip)}</p>` : ""}
         <p><b>${esc(k.kana)}</b> for <b>${esc(k.word)}</b> <span class="romaji">(${esc(k.wordRomaji)})</span> = ${esc(k.en)} · ${esc(k.hi)}</p>
         <div class="btn-row">
@@ -373,7 +472,9 @@ function renderKatakana(c) {
   c.innerHTML = tipBox(`💡 <b>Katakana kab use hota hai?</b> Foreign words ke liye: コーヒー (coffee), テレビ (TV), インド (India). Awaazein hiragana jaisi hi hain, bas letters alag dikhte hain.<br>
       <b>ー (lambi line)</b> = vowel ko lamba karo: ケーキ = <b>kee</b>ki (cake). <b>Chhota ッ</b> = pause: サッカー = sa<b>k</b>-kaa (soccer).<br>
       Tip: English word socho, phir Japanese style mein bolo: "ice cream" → アイス (aisu)!`) +
+    samePairsHtml() +
     `<h2>🔤 Katakana chart</h2><div id="kata-chart"></div>
+     <h2>📐 English → Katakana rules</h2>${kataRulesHtml()}
      <h2>🍔 Katakana words (English se aaye)</h2><div id="kata-words"></div>`;
   kanaChart(c.querySelector("#kata-chart"), KATAKANA, "k");
   withModes(c.querySelector("#kata-words"), words, body => {
@@ -383,7 +484,9 @@ function renderKatakana(c) {
 
 // ---------- Level 4: First words ----------
 function renderWords(c) {
-  c.innerHTML = tipBox("💡 Category chuno. Pehle 📋 list mein suno aur bolo, phir 🃏 Flashcards se khud ko test karo. Bade letters kana (padhne wale) hain, neeche kanji (asli likhawat) bhi diya hai.") + `<div id="word-tabs"></div>`;
+  c.innerHTML = tipBox("💡 Category chuno. Pehle 📋 list mein suno aur bolo, phir 🃏 Flashcards se khud ko test karo (wo cards 🔁 Revision mein sahi din pe wapas aayenge). Bade letters kana (padhne wale) hain, neeche kanji (asli likhawat) bhi diya hai. Roz 10-15 naye words kaafi hain.") +
+    `<div id="word-parts"></div><h2>📚 Words by category</h2><div id="word-tabs"></div>`;
+  wordPartsSection(c.querySelector("#word-parts"));
   tabs(c.querySelector("#word-tabs"), WORD_CATEGORIES.map(w => ({ id: w.id, title: w.title })), (id, body) => {
     const items = WORD_ITEMS.filter(w => w.category === id);
     withModes(body, items, b => { b.innerHTML = cardsGrid(items); });
@@ -402,12 +505,14 @@ function renderPhrases(c) {
 // ---------- Level 6: Grammar ----------
 function renderGrammar(c) {
   c.innerHTML = tipBox("💡 Ek din mein 1-2 lessons. Har example ko suno, phir apne words daal ke khud ka sentence banao! Jaise: わたしは <b>[apna naam]</b> です.") +
+    `<h2>⚡ Grammar shortcuts</h2><div id="g-shortcuts"></div><h2>📘 Lessons</h2>` +
     GRAMMAR.map((g, i) => `
       <details class="grammar" ${i === 0 ? "open" : ""}>
         <summary><span class="badge">${i + 1}</span> ${esc(g.title)} <code>${esc(g.pattern)}</code></summary>
         <p class="explain">💬 ${esc(g.explain)}</p>
         <div class="grid cards">${GRAMMAR_ITEMS.filter(e => e.lesson === i).map(e => itemCard(e)).join("")}</div>
       </details>`).join("");
+  grammarShortcutsSection(c.querySelector("#g-shortcuts"));
 }
 
 // ---------- Level 7: Conversations ----------
@@ -452,8 +557,8 @@ function renderConversations(c) {
       clearSpeaking(c);
       bubbles[i].classList.add("speaking");
       bubbles[i].scrollIntoView({ behavior: "smooth", block: "nearest" });
-      // Do alag pitch taaki do log alag sunai dein
-      await speakAsync(lines[i].say, { pitch: cv.speakers.indexOf(lines[i].who) === 0 ? 1.0 : 1.3 });
+      // Doosre insaan ke liye alag voice (ya alag tone), taaki do log alag sunai dein
+      await speakAsync(lines[i].say, { alt: cv.speakers.indexOf(lines[i].who) !== 0 });
       await new Promise(r => setTimeout(r, 400));
     }
     clearSpeaking(c);
@@ -467,7 +572,7 @@ function clearSpeaking(c) {
 // ---------- Level 8: Kanji ----------
 function renderKanji(c) {
   c.innerHTML = tipBox("💡 Kanji ek picture hai jiska matlab hota hai. Har kanji ke saath ek chhoti si kahaani (trick) di hai, use yaad karo. Kanji ki kai readings hoti hain, abhi bas example word yaad karo.") +
-    `<div id="kanji-modes"></div>`;
+    `<h2>🧩 Kanji tricks</h2>${kanjiTricksHtml()}<h2>📚 100 Kanji</h2><div id="kanji-modes"></div>`;
   withModes(c.querySelector("#kanji-modes"), KANJI_ITEMS, body => {
     body.innerHTML = `
       <div class="kana-detail empty" id="kanji-detail"><p class="muted">👆 Kisi bhi kanji pe click karo.</p></div>
@@ -506,6 +611,7 @@ const RENDERERS = {
 (function init() {
   const p = getParam("level");
   const level = p === null ? NaN : Number(p);
-  if (RENDERERS[level]) renderLevel(level);
+  if (getParam("revise")) renderRevision();
+  else if (RENDERERS[level]) renderLevel(level);
   else renderPicker();
 })();

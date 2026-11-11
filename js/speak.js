@@ -203,7 +203,7 @@ function renderRole() {
         b.innerHTML = bubbleInner(line, false);
         chat.appendChild(b);
         b.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        await speakAsync(line.say, { pitch: side === "left" ? 1.0 : 1.3 });
+        await speakAsync(line.say, { alt: side !== "left" });
         await wait(300);
       } else {
         b.classList.add("my-turn");

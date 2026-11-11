@@ -104,7 +104,7 @@ function getDictionary() {
     ...WORD_ITEMS, ...PHRASE_ITEMS,
     ...HIRA_ALL.map(k => kanaWordItem(k, 2)),
     ...KATA_ALL.filter(k => k.word !== k.kana).map(k => kanaWordItem(k, 3)),
-    ...KANJI_ITEMS, ...GRAMMAR_ITEMS, ...CONVO_ITEMS
+    ...KANJI_ITEMS, ...TRICK_ITEMS, ...GRAMMAR_ITEMS, ...CONVO_ITEMS
   ];
   const seen = new Set();
   return all.filter(it => {
@@ -113,6 +113,56 @@ function getDictionary() {
     seen.add(key);
     return true;
   });
+}
+
+// ---------- Tricks ke examples bhi normal items (🔊, flashcards, dictionary, revision mein) ----------
+const trickItem = (e, group) => ({ ...wordItem(e, null), type: "word", group });
+const TRICK_GROUPS = {
+  pron: PRONUNCIATION_TRICKS.flatMap(t => t.examples.map(e => trickItem(e, "pron"))),
+  kataRules: KATAKANA_RULES.flatMap(t => t.examples.map(e => trickItem(e, "kataRules"))),
+  suffix: SUFFIXES.flatMap(s => s.examples.map(e => ({ ...trickItem(e, "suffix"), part: s.part }))),
+  prefix: PREFIXES.flatMap(s => s.examples.map(e => ({ ...trickItem(e, "prefix"), part: s.part }))),
+  patterns: WORD_PATTERNS.flatMap(t => t.examples.map(e => trickItem(e, "patterns"))),
+  counters: COUNTERS.flatMap(s => s.examples.map(e => ({ ...trickItem(e, "counters"), part: s.part }))),
+  endings: VERB_ENDINGS.map(v => ({ ...trickItem(v.ex, "endings"), part: v.end, partMeaning: v.meaning })),
+  animeSpeech: ANIME_SPEECH.map(e => trickItem(e, "animeSpeech"))
+};
+const TRICK_ITEMS = Object.values(TRICK_GROUPS).flat();
+
+// ---------- Spaced repetition (Leitner boxes) ----------
+// Har card ka "box" (0-5). Yaad tha → agla box (der se wapas aayega). Bhool gaye → box 0 (kal wapas).
+const SRS_KEY = "nihongo-srs-v1";
+const SRS_DAYS = [1, 2, 4, 7, 15, 30];
+const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+const srsKey = it => `${it.type}:${it.jp}|${it.en}`;
+
+function getSrs() {
+  try { return JSON.parse(localStorage.getItem(SRS_KEY)) || {}; } catch { return {}; }
+}
+
+function srsUpdate(it, remembered) {
+  const all = getSrs();
+  const cur = all[srsKey(it)] || { box: 0 };
+  const box = remembered ? Math.min(cur.box + 1, SRS_DAYS.length - 1) : 0;
+  all[srsKey(it)] = { box, due: today() + SRS_DAYS[box] };
+  localStorage.setItem(SRS_KEY, JSON.stringify(all));
+}
+
+// Aaj dohraane wale cards (jo pehle dekhe the aur jinka time aa gaya)
+function getDueItems() {
+  const all = getSrs();
+  const t = today();
+  const byKey = {};
+  [...getAllItems(), ...TRICK_ITEMS].forEach(it => { byKey[srsKey(it)] = it; });
+  return Object.entries(all)
+    .filter(([k, v]) => v.due <= t && byKey[k])
+    .sort((a, b) => a[1].box - b[1].box)
+    .map(([k]) => byKey[k]);
+}
+
+function srsStats() {
+  const all = Object.values(getSrs());
+  return { seen: all.length, due: getDueItems().length, strong: all.filter(v => v.box >= 3).length };
 }
 
 // Homophones: ek hi kana, alag matlab (はな = phool / naak). Flashcard pe kanji hint dikhane ke liye.

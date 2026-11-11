@@ -85,6 +85,7 @@ function answer(chosen, q, btn) {
   if (state.answered) return;
   state.answered = true;
   const ok = answerOf(chosen) === answerOf(q);
+  srsUpdate(q, ok); // 🔁 Revision ke liye yaad rakho
   if (ok) state.score++;
   else state.wrongList.push(q);
   btn.classList.add(ok ? "correct" : "wrong");

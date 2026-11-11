@@ -233,6 +233,7 @@ details.grammar summary code { display: inline-block; margin-left: 6px; backgrou
 /* ================= Mobile extra ================= */
 @media (max-width: 700px) {
   .nav-settings { margin: 8px 0 0; }
+  .voice-panel { left: 10px; right: 10px; width: auto; }
   .kana-cell { width: 54px; height: 58px; }
   .kana-cell .k { font-size: 1.5rem; }
   .kana-chart { border-spacing: 4px; }
@@ -257,3 +258,53 @@ details.grammar summary code { display: inline-block; margin-left: 6px; backgrou
   .bubble { max-width: 92%; }
   .jp.big { font-size: 2.4rem; }
 }
+
+/* ================= Tricks ================= */
+details.trick { background: #f7fbff; border: 1px solid #d6e6f7; border-radius: var(--radius); padding: 10px 14px; margin: 10px 0; }
+details.trick > summary { cursor: pointer; font-weight: 700; font-size: 1.05rem; color: var(--blue); }
+.trick-body { margin-top: 8px; }
+.trick-body h4 { margin: 14px 0 2px; }
+.src { font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
+.src a { color: var(--blue); }
+.method-title { font-size: 1.02rem; margin-bottom: 4px; }
+.memo { background: #f3f0ff; border-radius: 8px; padding: 6px 10px; }
+.part-block { border-bottom: 1px dashed var(--border); padding: 8px 0 14px; }
+.part-head { font-size: 1.1rem; }
+.part { font-size: 1.3rem; font-weight: 700; color: var(--red); }
+.lookalike .jp { font-size: 1.8rem; text-align: center; }
+.pair-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pair { font-size: 1.4rem; padding: 6px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; cursor: pointer; }
+table.simple { border-collapse: collapse; width: 100%; background: #fff; }
+table.simple th, table.simple td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; font-size: 0.92rem; }
+table.simple th { background: #f6f0ea; }
+.jp-cell { font-size: 1.15rem; white-space: nowrap; }
+.big-cell { font-size: 1.6rem; text-align: center !important; }
+.routine { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.routine-step { display: block; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; color: inherit; text-decoration: none; }
+.routine-step:hover { border-color: var(--red); }
+.roadmap li { margin-bottom: 6px; }
+.trick-links { margin: 6px 0 0; padding-left: 18px; }
+.mini-quiz { background: #fff; border: 2px dashed var(--border); border-radius: var(--radius); padding: 12px; margin-top: 12px; }
+.mq-head { display: flex; justify-content: space-between; }
+.mq-q { text-align: center; margin: 8px 0; }
+.revision { border-color: var(--green); background: #f3fbf6; }
+
+/* ================= Voice settings panel ================= */
+.nav-voice-btn { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.5); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 0.9rem; }
+.voice-panel { position: absolute; right: 16px; top: 100%; width: min(360px, calc(100vw - 24px)); background: #fff; color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 14px; z-index: 40; }
+.voice-panel label { display: flex; flex-direction: column; gap: 4px; margin: 10px 0 0; font-weight: 600; }
+.voice-panel select { padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; }
+.vp-head { display: flex; justify-content: space-between; align-items: center; position: relative; }
+.vp-head .sheet-close { display: block; position: static; }
+
+/* ================= Sound builder (Level 0) ================= */
+.compare { width: 100%; border-collapse: collapse; margin: 8px 0; background: #fff; }
+.compare td, .compare th { border: 1px solid var(--border); padding: 6px; text-align: center; font-size: 1.5rem; }
+.compare th { font-size: 0.85rem; background: #f6f0ea; }
+.compare td.lbl { font-size: 0.85rem; text-align: left; }
+.builder-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; align-items: center; }
+.builder-row .chip { min-width: 44px; }
+.builder-out { display: flex; align-items: center; gap: 16px; justify-content: center; background: #fffdfb; border: 2px solid var(--border); border-radius: var(--radius); padding: 12px; margin-top: 8px; flex-wrap: wrap; }
+.builder-eq { font-size: 1.4rem; }
+.builder-out .big-kana { font-size: 4rem; }

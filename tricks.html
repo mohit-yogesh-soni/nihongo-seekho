@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tricks - Nihongo Seekho</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+  <main class="container">
+    <div class="level-head">
+      <h1>🧠 Jaldi seekhne ki tricks</h1>
+      <p class="muted">Research se saabit study techniques, aur Japanese ke shortcuts. Har trick apne level ke andar bhi hai, neeche link se seedha wahan jao.</p>
+    </div>
+
+    <section class="lesson">
+      <h2>⏱️ Roz ka 15 minute plan</h2>
+      <div id="routine"></div>
+    </section>
+
+    <section class="lesson">
+      <h2>📚 Seekhne ke tareeke (techniques)</h2>
+      <div id="methods"></div>
+    </section>
+
+    <section class="lesson">
+      <h2>🗺️ 12 hafte ka roadmap</h2>
+      <div id="roadmap"></div>
+    </section>
+
+    <section class="lesson">
+      <h2>⚡ Japanese ke shortcuts (kis level mein kya)</h2>
+      <div id="index" class="grid two"></div>
+    </section>
+  </main>
+
+  <script src="js/data/tricks.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/tricks-ui.js"></script>
+  <script>
+    document.getElementById("routine").innerHTML = dailyRoutineHtml();
+    document.getElementById("methods").innerHTML = studyMethodsHtml(false);
+    document.getElementById("roadmap").innerHTML = roadmapHtml();
+
+    // Har shortcut kis level/section mein hai
+    const INDEX = [
+      ["🗣️ Pronunciation", 0, [
+        ["pron-0", "Gaayab 'u'/'i' (です = 'des')"], ["pron-1", "Lambi awaaz (ou, ei)"], ["pron-2", "ん ki badalti awaaz"],
+        ["pron-3", "Tune (pitch) se matlab"], ["pron-4", "は = wa, へ = e, を = o"], ["pron-5", "Jude words mein bhaari awaaz (rendaku)"]]],
+      ["🔤 Hiragana", 1, [["h-lookalikes", "Milte-julte letters"], ["", "Har letter pe 🧠 picture-trick (letter pe click karo)"]]],
+      ["🔡 Katakana", 3, [["k-same", "Hiragana jaise dikhne wale"], ["k-rules", "English → Katakana rules"], ["k-lookalikes", "シ/ツ, ソ/ン jaise confusing letters"]]],
+      ["📚 Words", 4, [["w-parts", "Endings (〜人, 〜語, 〜屋...), shuruaat (お〜, 毎〜), patterns, ginti ke shabd + quiz"]]],
+      ["📘 Grammar", 6, [["g-groups", "Verb group 3 second mein"], ["g-endings", "Verb ending decoder + quiz (anime!)"],
+        ["g-final", "ね, よ, ぞ, かな: feelings"], ["g-contract", "Casual chhote forms (てる, ちゃう, なきゃ)"], ["g-anime", "Anime wale 'main' aur 'tu'"]]],
+      ["🈶 Kanji", 8, [["kj-radicals", "20 radicals (氵 = paani...)"], ["kj-combos", "Tukde jod ke kahaani (明 = 日 + 月)"], ["kj-reading", "Kaunsi reading kab"]]]
+    ];
+    document.getElementById("index").innerHTML = INDEX.map(([title, level, links]) => `
+      <div class="item-card">
+        <div class="method-title"><b>${title}</b> <span class="badge">Level ${level}</span></div>
+        <ul class="trick-links">${links.map(([id, label]) =>
+          `<li><a href="learn.html?level=${level}${id ? "#" + id : ""}">${esc(label)}</a></li>`).join("")}</ul>
+      </div>`).join("");
+  </script>
+</body>
+</html>
