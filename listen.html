@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listen - Nihongo Seekho</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+  <main class="container">
+    <div class="level-head">
+      <h1>👂 Listen: suno aur pehchano</h1>
+      <p class="muted">Awaaz suno, sahi matlab chuno. Anime samajhne ke liye kaan ki training sabse zaroori hai. Keyboard pe 1-4 dabake bhi jawaab de sakte ho.</p>
+    </div>
+
+    <div class="panel" id="setup">
+      <div class="form-row">
+        <label>Level: <select id="level-select"></select></label>
+        <label>Kitne sawaal: <select id="count-select"><option>10</option><option>20</option><option>30</option></select></label>
+        <label><input type="checkbox" id="show-text"> Japanese text bhi dikhao (aasaan mode)</label>
+      </div>
+      <button class="btn primary" id="start-btn">▶️ Quiz shuru karo</button>
+    </div>
+
+    <div class="panel hidden" id="quiz"></div>
+  </main>
+
+  <script src="js/data/syllabus.js"></script>
+  <script src="js/data/kana.js"></script>
+  <script src="js/data/words.js"></script>
+  <script src="js/data/phrases.js"></script>
+  <script src="js/data/grammar.js"></script>
+  <script src="js/data/conversations.js"></script>
+  <script src="js/data/kanji.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/listen.js"></script>
+</body>
+</html>

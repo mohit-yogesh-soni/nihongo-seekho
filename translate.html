@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Translate - Nihongo Seekho</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+  <main class="container">
+    <div class="level-head">
+      <h1>🔁 Translate</h1>
+      <p class="muted">Koi word yaad nahi aa raha? Yahan dhoondo. English, Hinglish, Japanese ya romaji, kuch bhi likho.</p>
+    </div>
+    <div class="mode-bar" id="tr-modes">
+      <button class="chip active" data-mode="dict">🔍 Dictionary</button>
+      <button class="chip" data-mode="quiz">🧠 Translation quiz</button>
+    </div>
+    <div class="panel" id="tr-panel"></div>
+  </main>
+  <footer class="footer small">
+    Badi dictionary ka data: <a href="https://www.edrdg.org/jmdict/j_jmdict.html" target="_blank" rel="noopener noreferrer">JMdict</a>
+    © <a href="https://www.edrdg.org/" target="_blank" rel="noopener noreferrer">EDRDG</a>,
+    license <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>
+    (<a href="js/data/jmdict/LICENSE.md">details</a>). Data thoda chhota kiya gaya hai aur romaji joda gaya hai.
+  </footer>
+
+  <script src="js/data/syllabus.js"></script>
+  <script src="js/data/kana.js"></script>
+  <script src="js/data/words.js"></script>
+  <script src="js/data/phrases.js"></script>
+  <script src="js/data/grammar.js"></script>
+  <script src="js/data/conversations.js"></script>
+  <script src="js/data/kanji.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/translate.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nihongo Seekho - Japanese seekho, Hinglish mein</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>こんにちは! <small>(Konnichiwa = Hello)</small></h1>
+      <p>Zero se anime samajhne tak. Japanese seekho Hinglish mein, step by step, bolne aur sunne pe focus ke saath.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="learn.html">Shuru karo →</a>
+        <button class="btn" id="voice-test">🔊 Sound test karo</button>
+      </div>
+      <p id="voice-status" class="muted"></p>
+    </section>
+
+    <section>
+      <h2>Kaise use karein?</h2>
+      <ol class="how-to">
+        <li><b>📖 Learn:</b> Level 0 se shuru karo. Har word pe 🔊 dabao aur zor se bolo.</li>
+        <li><b>👂 Listen:</b> Awaaz suno aur sahi meaning chuno. Isse kaan train honge.</li>
+        <li><b>🎤 Speak:</b> Mic mein bolo, website batayegi sahi bola ya nahi.</li>
+        <li><b>🔁 Translate:</b> Koi word yaad nahi aa raha? English ya Japanese mein search karo.</li>
+        <li><b>✍️ Scribble:</b> Likhna seekho (thoda aage jaake).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Syllabus</h2>
+      <div id="syllabus" class="grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">Roz 15 minute practice karo. Dheere dheere anime ke simple dialogues samajh aane lagenge 💪</footer>
+
+  <script src="js/data/syllabus.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    // Syllabus cards banao
+    const grid = document.getElementById("syllabus");
+    grid.innerHTML = SYLLABUS.map(s => `
+      <a class="card ${isDone("level-" + s.level) ? "done" : ""}" href="learn.html?level=${s.level}">
+        <div class="card-top">
+          <span class="badge">Level ${s.level}</span>
+          <span class="tag ${s.focus}">${s.focus === "speak" ? "🗣️ Bolna/Sunna" : "✍️ Likhna"}</span>
+        </div>
+        <h3>${esc(s.title)}</h3>
+        <p>${esc(s.desc)}</p>
+      </a>`).join("");
+
+    // Sound test: check karo ki Japanese voice hai ya nahi
+    document.getElementById("voice-test").addEventListener("click", () => {
+      speakJP("こんにちは。日本語を勉強しましょう。");
+      const status = document.getElementById("voice-status");
+      status.textContent = hasJapaneseVoice()
+        ? "✅ Japanese voice mil gayi. \"Konnichiwa. Nihongo wo benkyou shimashou\" = Hello, chalo Japanese padhte hain."
+        : "⚠️ Japanese voice nahi mili. Chrome/Edge use karo, ya phone settings mein Japanese voice install karo.";
+    });
+  </script>
+</body>
+</html>

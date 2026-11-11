@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scribble - Nihongo Seekho</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+  <main class="container">
+    <div class="level-head">
+      <h1>✍️ Scribble: likhna seekho</h1>
+      <p class="muted">Mouse ya ungli se box mein likho. Peeche halka letter guide hai. "Check karo" dabao aur score dekho.</p>
+    </div>
+
+    <div class="tip-box">💡 <b>Likhne ke 3 rules:</b> (1) Upar se neeche, (2) Left se right, (3) Pehle bahar ka frame, phir andar. Har letter ko likhte waqt zor se bolo bhi, double practice! 🗣️✍️</div>
+
+    <div class="form-row">
+      <label>Kya likhna hai:
+        <select id="sc-set">
+          <option value="h-basic">Hiragana: basic</option>
+          <option value="h-dakuten">Hiragana: ゛゜ dakuten</option>
+          <option value="k-basic">Katakana: basic</option>
+          <option value="k-dakuten">Katakana: ゛゜ dakuten</option>
+          <option value="kanji">Kanji (N5)</option>
+        </select>
+      </label>
+    </div>
+    <div class="char-strip" id="sc-strip"></div>
+
+    <div class="scribble-layout">
+      <div class="scribble-box">
+        <canvas id="sc-guide" width="300" height="300"></canvas>
+        <canvas id="sc-draw" width="300" height="300"></canvas>
+      </div>
+      <div class="scribble-side">
+        <div id="sc-info"></div>
+        <div class="btn-row">
+          <button class="btn" id="sc-undo">↩️ Undo</button>
+          <button class="btn" id="sc-clear">🧹 Saaf karo</button>
+          <button class="btn" id="sc-guide-toggle">👻 Guide on/off</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="sc-check">✅ Check karo</button>
+        </div>
+        <div id="sc-result"></div>
+        <div class="btn-row">
+          <button class="btn" id="sc-prev">← Pichhla</button>
+          <button class="btn" id="sc-random">🔀 Random</button>
+          <button class="btn" id="sc-next">Agla →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/data/syllabus.js"></script>
+  <script src="js/data/kana.js"></script>
+  <script src="js/data/words.js"></script>
+  <script src="js/data/phrases.js"></script>
+  <script src="js/data/grammar.js"></script>
+  <script src="js/data/conversations.js"></script>
+  <script src="js/data/kanji.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/scribble.js"></script>
+</body>
+</html>
