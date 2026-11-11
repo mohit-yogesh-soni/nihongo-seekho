@@ -233,7 +233,7 @@ details.grammar summary code { display: inline-block; margin-left: 6px; backgrou
 /* ================= Mobile extra ================= */
 @media (max-width: 700px) {
   .nav-settings { margin: 8px 0 0; }
-  .voice-panel { left: 10px; right: 10px; width: auto; }
+
   .kana-cell { width: 54px; height: 58px; }
   .kana-cell .k { font-size: 1.5rem; }
   .kana-chart { border-spacing: 4px; }
@@ -303,9 +303,10 @@ table.simple th { background: #f6f0ea; }
 /* ================= Voice settings panel ================= */
 .nav-voice-btn { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.5); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 0.9rem; }
 .voice-panel { position: absolute; right: 16px; top: 100%; width: min(360px, calc(100vw - 24px)); background: #fff; color: var(--text);
-  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 14px; z-index: 40; }
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 14px; z-index: 60; }
 .voice-panel label { display: flex; flex-direction: column; gap: 4px; margin: 10px 0 0; font-weight: 600; }
 .voice-panel select { padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; }
+.voice-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 55; }
 .vp-head { display: flex; justify-content: space-between; align-items: center; position: relative; }
 .vp-head .sheet-close { display: block; position: static; }
 
@@ -319,3 +320,18 @@ table.simple th { background: #f6f0ea; }
 .builder-out { display: flex; align-items: center; gap: 16px; justify-content: center; background: #fffdfb; border: 2px solid var(--border); border-radius: var(--radius); padding: 12px; margin-top: 8px; flex-wrap: wrap; }
 .builder-eq { font-size: 1.4rem; }
 .builder-out .big-kana { font-size: 4rem; }
+
+/* Desktop pe bhi panel khulne pe halka backdrop (click = band) */
+.voice-backdrop:not(.hidden) { display: block; background: transparent; }
+
+/* Mobile: Awaaz panel navbar se alag, neeche se khulne wali sheet. Khud scroll hoti hai (iPhone pe bhi).
+   Ye rule file ke END mein hai taaki upar wale desktop rule ko override kare. */
+@media (max-width: 700px) {
+  .voice-panel {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; z-index: 60;
+    max-height: 80vh; max-height: 80dvh; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    border-radius: 18px 18px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+  .voice-backdrop:not(.hidden) { background: rgba(0,0,0,0.35); }
+}

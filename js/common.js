@@ -56,6 +56,7 @@ function renderNav() {
         </div>
       </nav>
     </div>
+    <div class="voice-backdrop hidden" id="voice-backdrop"></div>
     <div class="voice-panel hidden" id="voice-panel" role="dialog" aria-label="Awaaz ki settings">
       <div class="vp-head"><b>🔊 Awaaz ki settings</b><button class="sheet-close vp-close" aria-label="Band karo">✕</button></div>
       <label>🗣️ Voice (aadmi / aurat)<select id="set-voice"></select></label>
@@ -89,8 +90,20 @@ function renderNav() {
     saveSettings({ ...getSettings(), romaji: e.target.checked });
   });
   const panel = header.querySelector("#voice-panel");
-  header.querySelector("#voice-btn").addEventListener("click", () => { fillVoiceSelect(); panel.classList.toggle("hidden"); });
-  header.querySelector(".vp-close").addEventListener("click", () => panel.classList.add("hidden"));
+  const backdrop = header.querySelector("#voice-backdrop");
+  const closePanel = () => { panel.classList.add("hidden"); backdrop.classList.add("hidden"); };
+  header.querySelector("#voice-btn").addEventListener("click", () => {
+    fillVoiceSelect();
+    const opening = panel.classList.contains("hidden");
+    if (!opening) return closePanel();
+    // Mobile pe ☰ menu band karo, taaki panel ke liye poori screen mile
+    header.querySelector(".nav-links").classList.remove("open");
+    panel.classList.remove("hidden");
+    backdrop.classList.remove("hidden");
+    panel.scrollTop = 0;
+  });
+  header.querySelector(".vp-close").addEventListener("click", closePanel);
+  backdrop.addEventListener("click", closePanel);
   header.querySelector("#set-rate").addEventListener("change", e => {
     saveSettings({ ...getSettings(), rate: parseFloat(e.target.value) });
   });
