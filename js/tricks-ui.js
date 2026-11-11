@@ -87,9 +87,14 @@ function studyMethodsHtml(compact = false) {
 }
 
 function dailyRoutineHtml() {
-  return `<div class="routine">${DAILY_ROUTINE.map(r => `
-    <a class="routine-step" href="${esc(r[3])}"><span class="badge">${esc(r[0])}</span> <b>${esc(r[1])}</b><br><span class="muted">${esc(r[2])}</span></a>`).join("")}</div>
-    <p class="muted small">Total ~15 minute. Busy din pe sirf 🔁 Revision (3 min) bhi chalega, bas streak mat todo.</p>`;
+  return `<div class="routine">${DAILY_ROUTINE.map((r, i) => `
+    <a class="routine-step" href="${esc(r[3])}">
+      <div class="rs-top"><span class="rs-num">${i + 1}</span><span class="rs-time">⏱️ ${esc(r[0])}</span></div>
+      <div class="rs-title">${esc(r[1])}</div>
+      <div class="rs-desc">${esc(r[2])}</div>
+      <span class="rs-go">Shuru karo →</span>
+    </a>`).join("")}</div>
+    <p class="routine-note">⏳ Total ~15 minute. Busy din pe sirf 🔁 Revision (3 min) bhi chalega, bas streak mat todo.</p>`;
 }
 
 function roadmapHtml() {
